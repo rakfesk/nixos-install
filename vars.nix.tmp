@@ -1,0 +1,9 @@
+{
+  hostName = "@HOSTNAME@";
+
+  user = {
+    name = "@USER_NAME@";
+    description = "@USER_DESCRIPTION@";
+    initialPassword = "@USER_INITIAL_PASSWORD@";
+  };
+}
