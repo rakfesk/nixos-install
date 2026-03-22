@@ -4,9 +4,13 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
+    hardware-config = {
+      url = "path:/etc/nixos";
+      flake = false;
+    };
   };
 
-  outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
+  outputs = inputs@{ self, nixpkgs, hardware-config, flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [ "x86_64-linux" "aarch64-linux" ];
 
@@ -24,8 +28,12 @@
 
         nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
+          specialArgs = {
+            vars = import (hardware-config + "/vars.nix");
+          };
           modules = [
             self.nixosModules.default
+            (hardware-config + "/hardware-configuration.nix")
             ./hosts/myhost.nix
           ];
         };

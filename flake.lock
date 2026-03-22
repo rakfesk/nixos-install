@@ -18,6 +18,19 @@
         "type": "github"
       }
     },
+    "hardware-config": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1774183003,
+        "narHash": "sha256-1Xv/3R2eu4MuEGP/z3k6JCg0/M9JsvWnEKf3scWQRM0=",
+        "path": "/etc/nixos",
+        "type": "path"
+      },
+      "original": {
+        "path": "/etc/nixos",
+        "type": "path"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1773821835,
@@ -52,6 +65,7 @@
     "root": {
       "inputs": {
         "flake-parts": "flake-parts",
+        "hardware-config": "hardware-config",
         "nixpkgs": "nixpkgs"
       }
     }

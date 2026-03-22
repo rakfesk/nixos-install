@@ -1,7 +1,6 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, vars, ... }:
 let
   cfg = config.mySystem.base;
-  vars = import ../vars.nix;
 in
 {
   options.mySystem.base = {

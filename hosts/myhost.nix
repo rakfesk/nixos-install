@@ -1,9 +1,5 @@
 { ... }:
 {
-  imports = [
-    ../hardware-configuration.nix
-  ];
-
   mySystem = {
     base.enable = true;
 
