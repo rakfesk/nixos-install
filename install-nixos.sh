@@ -154,17 +154,15 @@ mount ${boot_part} /mnt/boot
 
 nixos-generate-config --root /mnt
 
-git clone --branch init https://github.com/rakfesk/nixos-install.git
-
-cp nixos-install/flake.nix /mnt/etc/nixos/flake.nix
-cp nixos-install/flake.lock /mnt/etc/nixos/flake.lock
-cp nixos-install/configuration.nix /mnt/etc/nixos/configuration.nix
-cp nixos-install/vars.nix.tmp /mnt/etc/nixos/vars.nix.tmp
+cp flake.nix /mnt/etc/nixos/flake.nix
+cp flake.lock /mnt/etc/nixos/flake.lock
+cp -r modules /mnt/etc/nixos/modules
+cp -r hosts /mnt/etc/nixos/hosts
 
 sed -e "s#[@]USER_NAME[@]#${USERNAME}#" \
     -e "s#[@]USER_DESCRIPTION[@]#${USER_DESCRIPTION}#" \
     -e "s#[@]USER_INITIAL_PASSWORD[@]#${PASSWORD}#" \
     -e "s#[@]HOSTNAME[@]#${HOSTNAME}#" \
-    /mnt/etc/nixos/vars.nix.tmp > /mnt/etc/nixos/vars.nix
+    vars.nix.tmp > /mnt/etc/nixos/vars.nix
 
 nixos-install --flake /mnt/etc/nixos#myhost
