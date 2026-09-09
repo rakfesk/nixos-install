@@ -8,11 +8,18 @@ in
       ./hardware-configuration.nix
     ];
   boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelModules = [ "ftdi_sio" ];
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
   boot.binfmt.preferStaticEmulators = true;
+  
+  #TPM LUKS unlock support
+  boot.initrd.systemd.enable = true;
+  boot.initrd.availableKernelModules = [ "tpm_crb" "tpm_tis" ];
+
+  hardware.graphics.enable = true;
  
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
  
@@ -38,15 +45,7 @@ in
   services.xserver.enable = true;
 
   # Enable the GNOME Desktop Environment.
-  services.greetd = {
-    enable = true;
-    settings = {
-      default_session = {
-        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-session --sessions ${pkgs.hyprland}/share/wayland-sessions";
-        user = "greeter";
-      };
-    };
-  };
+  services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
 
   # Configure keymap in X11
@@ -58,12 +57,18 @@ in
   # Configure console keymap
   console.keyMap = "no";
 
+  services.flatpak.enable = true;
+  environment.sessionVariables.XDG_DATA_DIRS = [
+    "/var/lib/flatpak/exports/share"
+    "$HOME/.local/share/flatpak/exports/share"
+  ];
   # Enable CUPS to print documents.
   services.printing.enable = true;
   services.hardware.bolt.enable = true;
   # Enable sound with pipewire.
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
+  security.tpm2.enable = true;
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -123,7 +128,7 @@ security.sudo.wheelNeedsPassword = false;
     enable = true;
   };
   virtualisation.libvirtd.enable = true;
-  # List packages installed in system profile. To search, run:
+# List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
   #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
@@ -133,7 +138,7 @@ security.sudo.wheelNeedsPassword = false;
   git
   stow
   wofi
-  hyprpanel
+  wayle
   hyprpaper
   hypridle
   hyprlock
@@ -166,6 +171,7 @@ security.sudo.wheelNeedsPassword = false;
   ansible
   sshpass
   influxdb2
+  claude-code
   qemu
   qemu-user
   multipath-tools #Yocto
@@ -210,17 +216,24 @@ environment.sessionVariables.NIXOS_OZONE_WL = "1";
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "25.11"; # Did you read the comment?
+  system.stateVersion = "25.05"; # Did you read the comment?
 
-systemd.services.enable-lte = {
-  description = "Enable LTE modem at boot";
-  after = [ "network.target" ];
-  wantedBy = [ "multi-user.target" ];
-  serviceConfig = {
-    Type = "oneshot";
-    ExecStart = "/run/current-system/sw/bin/mbimcli -p -d /dev/cdc-wdm0 -v --quectel-set-radio-state=on";
-    RemainAfterExit = true;
-  };
-};
+
+services.udev.extraRules = ''
+  # Bind custom FTDI devices to ftdi_sio
+  ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="1546", ATTR{idProduct}=="0507", \
+    RUN+="${pkgs.kmod}/bin/modprobe ftdi_sio", \
+    RUN+="${pkgs.bash}/bin/bash -c 'echo 1546 0507 > /sys/bus/usb-serial/drivers/ftdi_sio/new_id'"
+
+  ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="1546", ATTR{idProduct}=="0508", \
+    RUN+="${pkgs.kmod}/bin/modprobe ftdi_sio", \
+    RUN+="${pkgs.bash}/bin/bash -c 'echo 1546 0508 > /sys/bus/usb-serial/drivers/ftdi_sio/new_id'"
+  # FTDI device naming
+  SUBSYSTEM=="tty", ATTRS{idVendor}=="1546", ATTRS{idProduct}=="0507", \
+    SYMLINK+="ftdi-device-a"
+
+  SUBSYSTEM=="tty", ATTRS{idVendor}=="1546", ATTRS{idProduct}=="0508", \
+    SYMLINK+="ftdi-device-b"
+'';
 
 }

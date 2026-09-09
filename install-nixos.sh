@@ -156,8 +156,6 @@ nixos-generate-config --root /mnt
 
 git clone --branch init https://github.com/rakfesk/nixos-install.git
 
-cp nixos-install/flake.nix /mnt/etc/nixos/flake.nix
-cp nixos-install/flake.lock /mnt/etc/nixos/flake.lock
 cp nixos-install/configuration.nix /mnt/etc/nixos/configuration.nix
 cp nixos-install/vars.nix.tmp /mnt/etc/nixos/vars.nix.tmp
 
@@ -167,4 +165,4 @@ sed -e "s#[@]USER_NAME[@]#${USERNAME}#" \
     -e "s#[@]HOSTNAME[@]#${HOSTNAME}#" \
     /mnt/etc/nixos/vars.nix.tmp > /mnt/etc/nixos/vars.nix
 
-nixos-install --flake /mnt/etc/nixos#myhost
+nixos-install
